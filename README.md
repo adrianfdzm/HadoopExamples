@@ -1,0 +1,2 @@
+# HadoopExamples
+MapReduce related examples
