@@ -228,7 +228,7 @@ public class AverageWritable implements Writable {
 ```
 
 ##partitioner/UrlCount
-A file containing a url in each line is read to count the number of occurrences of each url. Several reduce tasks are used and it is required that urls with the same host end up in the same output file so a custom ```Partitioner``` implementation is used.
+A file containing a url in each line is read to count the number of occurrences of each url. Each reduce task in a Hadoop MapReduce job write its own output file. Several reduce tasks are used in this job and it is required that urls with the same host end up in the same output file so a custom ```Partitioner``` implementation is used.
 
 ```java
 	public int run(String[] args) throws Exception {
@@ -290,5 +290,83 @@ public class URLCountPartitioner extends Partitioner<Text, LongWritable>{
 ```
 
 ##partitioner/TotalOrderSortV1
+
+The output from wordcount example are ordered alphabetically but now we desire to order that output by number of occurrences of each word. We preprocess the wordcount output file to change the key-value order of each register so the number of occurrences is now the key and the word is the value.
+
+```java
+	public int run(String[] args) throws Exception {
+		if (args.length != 2) {
+			System.err.println("PreprocessorDriver required params: <input_path> <output_path>");
+			System.exit(-1);
+		}
+
+		deleteOutputFileIfExists(args);
+
+		final Job job = new Job(getConf());
+		job.setJarByClass(PreProcessorDriver.class);
+		
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+		job.setMapperClass(PreProcessorMapper.class);
+		job.setOutputKeyClass(LongWritable.class);
+		job.setOutputValueClass(Text.class);
+		job.setNumReduceTasks(0);
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
+
+		job.waitForCompletion(true);
+
+		return 0;
+	}
+```
+
+No reduce phase is needed so ```job.setNumReduceTasks(0);``` is called. The output of this job is going to be stored in the HDFS as a sequence file: ```job.setOutputFormatClass(SequenceFileOutputFormat.class);```. ```PreProcessorMapper``` is trivial so it is omitted here
+
+Next job will order the output. If partitioning function is not overriden and more than one reduce task is set the output of the job would be similar to this example:
+**part-r-00000
+```
+1 hello
+4 dog
+6 world
+```
+
+**part-r-00001
+```
+2 bye
+3 cat
+5 bunny
+```
+
+Output files are ordered localy but a total order is desired so #occurrences in part-r-00000 words < #ocurrences in part-r-00001 words:
+
+**part-r-00000
+```
+1 hello
+2 bye
+3 cat
+```
+
+**part-r-00001
+```
+4 dog
+5 bunny
+6 world
+```
+
+A custom partitioning function is set through ```job.setPartitionerClass(TotalOrderV1Partitioner.class);``` call. In the job configuration, Mapper and Reducer implementations are not being set since sorting is always performed as a default.
+
+```java
+	@Override
+	public int getPartition(LongWritable key, Text value, int numPartitions) {
+		if(numPartitions == 0)
+			return 0;
+		//Hardcoded. Pretty ugly
+		if(key.get()> 3)
+			return 1;
+		return 0;
+	}
+```
+It is being assuming that 2 reduce task are going to be set. Pairs with 3 or less number of occurrences are put into the partition #0 and the other into the second one. It is a bad practise to hardcode like that but it is just for understanding. Next example will fix this.
 
 ##partitioner/TotalOrderSortV2
