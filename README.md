@@ -324,14 +324,15 @@ The output from wordcount example are ordered alphabetically but now we desire t
 No reduce phase is needed so ```job.setNumReduceTasks(0);``` is called. The output of this job is going to be stored in the HDFS as a sequence file: ```job.setOutputFormatClass(SequenceFileOutputFormat.class);```. ```PreProcessorMapper``` is trivial so it is omitted here
 
 Next job will order the output. If partitioning function is not overriden and more than one reduce task is set the output of the job would be similar to this example:
-**part-r-00000
+
+**part-r-00000**
 ```
 1 hello
 4 dog
 6 world
 ```
 
-**part-r-00001
+**part-r-00001**
 ```
 2 bye
 3 cat
@@ -340,14 +341,14 @@ Next job will order the output. If partitioning function is not overriden and mo
 
 Output files are ordered localy but a total order is desired so #occurrences in part-r-00000 words < #ocurrences in part-r-00001 words:
 
-**part-r-00000
+**part-r-00000**
 ```
 1 hello
 2 bye
 3 cat
 ```
 
-**part-r-00001
+**part-r-00001**
 ```
 4 dog
 5 bunny
