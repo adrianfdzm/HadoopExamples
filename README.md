@@ -3,11 +3,14 @@ This code was built in order to be used as example of all the characteristic of 
 * **Wordcount**: The most basic example of MapReduce job
 * **writables/Aggregation2D**: This example aggregates 2-dimension measurements in order to show how to use Hadoop writables
 * **writables/AvgAggregation2D**: Another example on 2-dimension measurements that show the use of Hadoop writables
+* **partitioner/UrlCount**: This example shows how partitioning functionality can be overriden in order group keys in the desired reduce task. The urls from a file are counted but we desire that urls with the same host end up in the same output file
+* **partitioner/TotalOrderV1**: It shows how to order a wordcount file by the number of occurrences. Hadoop orders the output of each reduce task but we want the output of all reduce task to be ordered (part-r-00000 registers < part-r-00001 registers < part-r-00002 registers < ...). This job shows an ugly solution for a 2 reduce tasks job
+* **partitioner/ToatlOrderV2**: Try to solve the same problem exposed above but this time Hadoop ```Sampler``` and ```TotalOrderPartitioner``` classes are used
 
 ##Wordcount
 Basic example of MapReduce job. Map split lines into words that are writen as key. Punctuation marks are not taken into account
 ```java
-  @Override
+  	@Override
 	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, Text, LongWritable>.Context context)
 			throws IOException, InterruptedException {
 		String[] splits = value.toString().trim().split("\\s+");
@@ -18,7 +21,7 @@ Basic example of MapReduce job. Map split lines into words that are writen as ke
 ```
 Reduce aggregates the number of occurrences of each word
 ```java
-  @Override
+	 @Override
 	protected void reduce(Text key, Iterable<LongWritable> values,
 			Reducer<Text, LongWritable, Text, LongWritable>.Context context) throws IOException, InterruptedException {
 		long count = 0;
@@ -36,9 +39,9 @@ In order to run the MapReduce job using ```hadoop jar``` command, main class mus
 
 ##writables/Aggregation2D
 
-This MapReduce job aims to illustrate how to use Hadoop custom ```WritableComparable``` object inside a MapReduce job. Map coordinates that are readed from a plain text file are seriealized into  ```PointWritable``` objects during the map tasks and and passed on to the reduce tasks
+This MapReduce job aims to illustrate how to use Hadoop custom ```WritableComparable``` object inside a MapReduce job. Map coordinates that are readed from a plain text file are seriealized into  ```PointWritable``` objects during the map tasks and passed on to the reduce tasks
 ```java
-  @Override
+  	@Override
 	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, PointWritable, LongWritable>.Context context)
 			throws IOException, InterruptedException {
 
@@ -133,10 +136,14 @@ public class PointWritable implements WritableComparable<PointWritable> {
 ```
 Note that:
 * A default constructor without arguments must be present because it is used by the MapReduce framework. 
-* There is a Writable interface but, in order to use our custom ```Writable``` as key, it is needed to implement the ```WritableComparable``` interface
-* Equals and hashCode methods are used by some tools such as MRUnit (Unit testing for Hadoop MapReduce)
+* There is a ```Writable``` interface but, in order to use our custom ```Writable``` as key, it is needed to implement the ```WritableComparable``` interface
+* ```equals()``` and ```hashCode()``` methods are used by some tools such as MRUnit (Unit testing for Hadoop MapReduce)
 * ```toString()``` method is used to write to the final output file of the job
 
 ##writables/AvgAggregation2D
 
-```TODO```
+##partitioner/UrlCount
+
+##partitioner/TotalOrderSortV1
+
+##partitioner/TotalOrderSortV2
