@@ -5,7 +5,7 @@ This code was built in order to be used as example of all the characteristic of 
 * **writables/AvgAggregation2D**: Another example on 2-dimension measurements that show the use of Hadoop writables
 * **partitioner/UrlCount**: This example shows how partitioning functionality can be overriden in order group keys in the desired reduce task. The urls from a file are counted but we desire that urls with the same host end up in the same output file
 * **partitioner/TotalOrderV1**: It shows how to order a wordcount file by the number of occurrences. Hadoop orders the output of each reduce task but we want the output of all reduce task to be ordered (part-r-00000 registers < part-r-00001 registers < part-r-00002 registers < ...). This job shows an ugly solution for a 2 reduce tasks job
-* **partitioner/ToatlOrderV2**: Try to solve the same problem exposed above but this time Hadoop ```Sampler``` and ```TotalOrderPartitioner``` classes are used
+* **partitioner/TotalOrderV2**: Try to solve the same problem exposed above but this time Hadoop ```Sampler``` and ```TotalOrderPartitioner``` classes are used
 
 ##Wordcount
 Basic example of MapReduce job. Map split lines into words that are writen as key. Punctuation marks are not taken into account
@@ -39,7 +39,7 @@ In order to run the MapReduce job using ```hadoop jar``` command, main class mus
 
 ##writables/Aggregation2D
 
-This MapReduce job aims to illustrate how to use Hadoop custom ```WritableComparable``` object inside a MapReduce job. Map coordinates that are readed from a plain text file are seriealized into  ```PointWritable``` objects during the map tasks and passed on to the reduce tasks
+This MapReduce job aims to illustrate how to use Hadoop custom ```WritableComparable``` class inside a MapReduce job. Map coordinates that are readed from a plain text file are seriealized into  ```PointWritable``` objects during the map tasks and passed on to the reduce tasks
 ```java
   	@Override
 	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, PointWritable, LongWritable>.Context context)
@@ -142,7 +142,152 @@ Note that:
 
 ##writables/AvgAggregation2D
 
+Based on the previous example, the same data is processed to calculate the average value of each point. Map phase produces now the pair ```<PointWritable,AverageWritable>```
+
+```java
+	String pointStr = value.toString().split(KEY_VALUE_SEP)[0];
+	AverageWritable outValue = new AverageWritable(1, 
+		Long.parseLong(value.toString().split(KEY_VALUE_SEP)[1]));
+
+	PointWritable outKey = new PointWritable(Double.parseDouble(pointStr.split(POINT_COORDINATE_SEP)[0]),
+		Double.parseDouble(pointStr.split(POINT_COORDINATE_SEP)[1]));
+```
+
+```AverageWritable``` implements ```Writable``` interface to store and serialize the number of occurrences of a point and the sum of his measurement so the average can be calculated even when the data goes through a combiner phase
+
+```java
+public class AverageWritable implements Writable {
+	private LongWritable count;
+	private LongWritable sum;
+
+	public AverageWritable(long count, long sum) {
+		this.count = new LongWritable(count);
+		this.sum = new LongWritable(sum);
+	}
+
+	// init method without params must be present
+	public AverageWritable() {
+		count = new LongWritable();
+		sum = new LongWritable();
+	}
+
+	public LongWritable getCount() {
+		return count;
+	}
+
+	public void setCount(LongWritable count) {
+		this.count = count;
+	}
+
+	public LongWritable getSum() {
+		return sum;
+	}
+
+	public void setSum(LongWritable sum) {
+		this.sum = sum;
+	}
+
+	public double getAverage() {
+		if (count.get() > 0)
+			return sum.get() / (double) count.get();
+		return 0.0;
+	}
+
+	public void readFields(DataInput in) throws IOException {
+		count.readFields(in);
+		sum.readFields(in);
+	}
+
+	public void write(DataOutput out) throws IOException {
+		count.write(out);
+		sum.write(out);
+	}
+
+	@Override
+	public String toString() {
+		return String.valueOf(this.getAverage());
+	}
+
+	/* MRUnit needs hashcode and equals in order to compare outputs */
+	@Override
+	public int hashCode() {
+		return count.hashCode() * 128 + sum.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof AverageWritable) {
+			AverageWritable avg = (AverageWritable) obj;
+			if (this.count.get() == avg.count.get() && this.sum.get() == avg.sum.get())
+				return true;
+		}
+		return false;
+	}
+
+}
+```
+
 ##partitioner/UrlCount
+A file containing a url in each line is read to count the number of occurrences of each url. Several reduce tasks are used and it is required that urls with the same host end up in the same output file so a custom ```Partitioner``` implementation is used.
+
+```java
+	public int run(String[] args) throws Exception {
+		if (args.length != 2) {
+			System.err.println("URLCountDriver required params: <input_path> <output_path>");
+			System.exit(-1);
+		}
+
+		deleteOutputFileIfExists(args);
+
+		final Job job = new Job(getConf());
+		//local mode execution will turn this to 1
+		job.setNumReduceTasks(2);
+		
+		job.setJarByClass(URLCountDriver.class);
+		job.setInputFormatClass(TextInputFormat.class);
+		job.setOutputFormatClass(TextOutputFormat.class);
+
+		job.setMapperClass(URLCountMapper.class);
+		job.setReducerClass(URLCountReducer.class);
+		// We may use a combiner
+		job.setCombinerClass(URLCountReducer.class);
+		job.setPartitionerClass(URLCountPartitioner.class);
+
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(LongWritable.class);
+
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(LongWritable.class);
+
+		FileInputFormat.addInputPath(job, new Path(args[0]));
+		FileOutputFormat.setOutputPath(job, new Path(args[1]));
+
+		job.waitForCompletion(true);
+
+		return 0;
+	}
+```
+
+Note that the number of reduce tasks is set with ```job.setNumReduceTasks(2);``` call and the custom ```Partition``` implementation is set with ```job.setPartitionerClass(URLCountPartitioner.class)```
+
+```java
+public class URLCountPartitioner extends Partitioner<Text, LongWritable>{
+
+	@Override
+	public int getPartition(Text key, LongWritable value, int numPartitions) {
+		System.out.println(numPartitions);
+		if(numPartitions == 0)
+			return 0;
+		try {
+			URL url = new URL(key.toString());
+			return url.getHost().hashCode()%numPartitions;
+		} catch (MalformedURLException ignored) {
+			return 0;
+		}
+	}
+
+}
+```
 
 ##partitioner/TotalOrderSortV1
 
