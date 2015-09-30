@@ -371,3 +371,12 @@ A custom partitioning function is set through ```job.setPartitionerClass(TotalOr
 It is being assuming that 2 reduce task are going to be set. Pairs with 3 or less number of occurrences are put into the partition #0 and the other into the second one. It is a bad practise to hardcode like that but it is just for understanding. Next example will fix this.
 
 ##partitioner/TotalOrderSortV2
+
+This example solves the same problem decipted below but in a more appropiate way. First Hadoop ```TotalOrderPartitioner``` class is set. Then ```Sampler``` utility is use in order to create a partition list from ramdom samples of the input provided by ```RamdomSampler``` class. This list is going to be use by the ```TotalOrderPartitioner``` class. ```InputSampler.writePartitionFile(job, sampler)``` call must be done after ```TotalOrderPartitioner.setPartitionFile(job.getConfiguration(), new Path(args[1] + "/_partition.lst"));``` call
+
+```java
+	job.setPartitionerClass(TotalOrderPartitioner.class);
+	RandomSampler<LongWritable, Text> sampler = new InputSampler.RandomSampler<LongWritable, Text>(0.1, 15);
+	TotalOrderPartitioner.setPartitionFile(job.getConfiguration(), new Path(args[1] + "/_partition.lst"));
+	InputSampler.writePartitionFile(job, sampler);
+```
