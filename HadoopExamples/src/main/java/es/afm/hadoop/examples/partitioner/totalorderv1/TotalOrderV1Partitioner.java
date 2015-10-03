@@ -11,7 +11,7 @@ public class TotalOrderV1Partitioner extends Partitioner<LongWritable, Text>{
 		if(numPartitions == 0)
 			return 0;
 		//Hardcoded. Pretty ugly
-		if(key.get()> 3)
+		if(key.get()>= 3)
 			return 1;
 		return 0;
 	}
