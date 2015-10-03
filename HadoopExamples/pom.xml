@@ -9,20 +9,20 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
-			<artifactId>hadoop-core</artifactId>
-			<version>1.2.1</version>
+			<artifactId>hadoop-mapreduce-client-core</artifactId>
+			<version>2.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-common</artifactId>
-			<version>2.7.1</version>
+			<version>2.6.1</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.mrunit</groupId>
 			<artifactId>mrunit</artifactId>
 			<version>1.1.0</version>
-			<classifier>hadoop1</classifier>
+			<classifier>hadoop2</classifier>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
