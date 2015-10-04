@@ -13,6 +13,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.BasicConfigurator;
 
 import es.afm.hadoop.examples.writables.PointWritable;
 import es.afm.hadoop.examples.writables.counters.Counters;
@@ -66,6 +67,7 @@ public class Aggregation2DDriver extends Configured implements Tool {
 	}
 
 	public static void main(String[] args) throws Exception {
+		BasicConfigurator.configure();
 		ToolRunner.run(new Aggregation2DDriver(), args);
 	}
 

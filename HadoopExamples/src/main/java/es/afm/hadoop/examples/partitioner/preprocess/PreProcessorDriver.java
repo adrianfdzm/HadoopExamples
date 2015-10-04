@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.BasicConfigurator;
 
 /*
  * 
@@ -54,6 +55,7 @@ public class PreProcessorDriver extends Configured implements Tool {
 	}
 
 	public static void main(String[] args) throws Exception {
+		BasicConfigurator.configure();
 		ToolRunner.run(new PreProcessorDriver(), args);
 	}
 

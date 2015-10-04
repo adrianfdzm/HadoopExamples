@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.BasicConfigurator;
 
 /**
  * Read SequenceFiles (#occurrences,word) and perform a total order on them 
@@ -56,6 +57,7 @@ public class TotalOrderV1Driver extends Configured implements Tool {
 	}
 
 	public static void main(String[] args) throws Exception {
+		BasicConfigurator.configure();
 		ToolRunner.run(new TotalOrderV1Driver(), args);
 	}
 

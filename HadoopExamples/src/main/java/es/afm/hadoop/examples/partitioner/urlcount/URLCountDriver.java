@@ -14,6 +14,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.log4j.BasicConfigurator;
 
 /**
  * Similar to wordcount, it is wanted to count how many times the same URI
@@ -65,6 +66,7 @@ public class URLCountDriver extends Configured implements Tool {
 	}
 
 	public static void main(String[] args) throws Exception {
+		BasicConfigurator.configure();
 		ToolRunner.run(new URLCountDriver(), args);
 	}
 
