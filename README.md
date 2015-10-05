@@ -6,6 +6,7 @@ This code was built in order to be used as example of all the characteristic of 
 * **partitioner/UrlCount**: This example shows how partitioning functionality can be overriden in order group keys in the desired reduce task. The urls from a file are counted but we desire that urls with the same host end up in the same output file
 * **partitioner/TotalOrderV1**: It shows how to order a wordcount file by the number of occurrences. Hadoop orders the output of each reduce task but we want the output of all reduce task to be ordered (part-r-00000 registers < part-r-00001 registers < part-r-00002 registers < ...). This job shows an ugly solution for a 2 reduce tasks job
 * **partitioner/TotalOrderV2**: Try to solve the same problem exposed above but this time Hadoop ```Sampler``` and ```TotalOrderPartitioner``` classes are used
+* **ReduceSideJoin**: Performs a join between two datasets using ```MultipleInputs``` to set a different ```Mapper`` class for each dataset. They map fucntion writes as key the value of the join key field, so results are grouped by the framework in the reduce phase
 
 ##Wordcount
 Basic example of MapReduce job. Map split lines into words that are writen as key. Punctuation marks are not taken into account
@@ -380,3 +381,6 @@ This example solves the same problem decipted below but in a more appropiate way
 	TotalOrderPartitioner.setPartitionFile(job.getConfiguration(), new Path(args[1] + "/_partition.lst"));
 	InputSampler.writePartitionFile(job, sampler);
 ```
+
+##ReduceSideJoin
+
