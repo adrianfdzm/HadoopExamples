@@ -6,7 +6,7 @@ This code was built in order to be used as example of all the characteristic of 
 * **partitioner/UrlCount**: This example shows how partitioning functionality can be overriden in order group keys in the desired reduce task. The urls from a file are counted but we desire that urls with the same host end up in the same output file
 * **partitioner/TotalOrderV1**: It shows how to order a wordcount file by the number of occurrences. Hadoop orders the output of each reduce task but we want the output of all reduce task to be ordered (part-r-00000 registers < part-r-00001 registers < part-r-00002 registers < ...). This job shows an ugly solution for a 2 reduce tasks job
 * **partitioner/TotalOrderV2**: Try to solve the same problem exposed above but this time Hadoop ```Sampler``` and ```TotalOrderPartitioner``` classes are used
-* **ReduceSideJoin**: Performs a join between two datasets using ```MultipleInputs``` to set a different ```Mapper`` class for each dataset. They map fucntion writes as key the value of the join key field, so results are grouped by the framework in the reduce phase
+* **ReduceSideJoin**: Performs a join between two datasets using ```MultipleInputs``` to set a different ```Mapper``` class for each dataset. They map fucntion writes as key the value of the join key field, so results are grouped by the framework in the reduce phase
 
 ##Wordcount
 Basic example of MapReduce job. Map split lines into words that are writen as key. Punctuation marks are not taken into account
@@ -384,3 +384,108 @@ This example solves the same problem decipted below but in a more appropiate way
 
 ##ReduceSideJoin
 
+This example depicts how to perform a join between two dataset. First dataset contains several row in CSV format each one containing information about a teacher: identifier, department-id, name and salary. Second dataset contains information about deparments: department-id and department name. A teacher is related to only one department and a department has many associated teachers. The output of the job will be a row for each teacher containing his name, department name and salary. Then, department-id is going to be used as join key on the map phase. To make things easiers we are going to point the dataset the record belongs to adding a dataset key to map output records' key. So we have a composite key formed by the join key plus the data set key
+```java
+public class CompositeKeyWritable implements WritableComparable<CompositeKeyWritable> {
+	private Text joinKey;
+	private IntWritable datasetKey;
+	public static final int DATASET_KEY_TEACHERS = 2;
+	public static final int DATASET_KEY_DEPARTMENTS = 1;
+
+	/* Empty constructor needed */
+	public CompositeKeyWritable() {
+		joinKey = new Text();
+		datasetKey = new IntWritable();
+	}
+
+	public CompositeKeyWritable(Text joinKey, IntWritable datasetKey) {
+		this.joinKey = joinKey;
+		this.datasetKey = datasetKey;
+	}
+
+	public Text getJoinKey() {
+		return joinKey;
+	}
+
+	public void setJoinKey(Text joinKey) {
+		this.joinKey = joinKey;
+	}
+
+	public IntWritable getDatasetKey() {
+		return datasetKey;
+	}
+
+	public void setDatasetKey(IntWritable datasetKey) {
+		this.datasetKey = datasetKey;
+	}
+
+	public void readFields(DataInput in) throws IOException {
+		joinKey.readFields(in);
+		datasetKey.readFields(in);
+
+	}
+
+	public void write(DataOutput out) throws IOException {
+		joinKey.write(out);
+		datasetKey.write(out);
+	}
+
+	public int compareTo(CompositeKeyWritable obj) {
+		int result = joinKey.compareTo(obj.joinKey);
+		if (result == 0)
+			result = datasetKey.compareTo(obj.datasetKey);
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return new StringBuilder().append(datasetKey).append(", ")
+				.append(joinKey).toString();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if(obj instanceof CompositeKeyWritable)
+			return this.compareTo((CompositeKeyWritable) obj) == 0;
+		return false;
+	}
+}
+```
+The job has to partition the record by its join key:
+```java
+public class ReduceSideJoinPartitioner extends Partitioner<CompositeKeyWritable, Text> {
+	@Override
+	public int getPartition(CompositeKeyWritable key, Text value, int numPartitions) {
+		return Math.abs(key.getJoinKey().hashCode()) % numPartitions;
+	}
+}
+```
+Sort then by the whole composite key (```compareTo()``` method inside ```CompositeKeyWritable``` class):
+```java
+public int compareTo(CompositeKeyWritable obj) {
+	int result = joinKey.compareTo(obj.joinKey);
+	if (result == 0)
+		result = datasetKey.compareTo(obj.datasetKey);
+	return result;
+}
+```
+Grouping is performed using a custom ```RawComparator``` implementations that group the records by its join key
+```java
+public class CompositeKeyWritableGroupingComparator extends WritableComparator {
+	protected CompositeKeyWritableGroupingComparator() {
+		super(CompositeKeyWritable.class, true);
+	}
+	
+	@Override
+	public int compare(WritableComparable a, WritableComparable b) {
+		CompositeKeyWritable w1 = (CompositeKeyWritable) a;
+		CompositeKeyWritable w2 = (CompositeKeyWritable) b;
+		return w1.getJoinKey().compareTo(w2.getJoinKey());
+	}
+}
+```
+```MultipleInput``` is used to associate a different mapper implementation to each dataset:
+```java
+MultipleInputs.addInputPath(job, new Path(args[0]), TextInputFormat.class, TeachersMapper.class);
+MultipleInputs.addInputPath(job, new Path(args[1]), TextInputFormat.class, DepartmentsMapper.class);
+```
