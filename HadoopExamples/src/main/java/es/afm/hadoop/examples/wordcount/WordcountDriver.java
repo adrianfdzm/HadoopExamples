@@ -28,8 +28,8 @@ public class WordcountDriver extends Configured implements Tool {
 		}
 		
 		deleteOutputFileIfExists(args);
-		
-		final Job job = new Job(getConf());
+						
+		final Job job = Job.getInstance(getConf());
 		job.setJarByClass(WordcountDriver.class);
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);

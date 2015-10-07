@@ -29,7 +29,7 @@ public class ReduceSideJoinDriver extends Configured implements Tool {
 		
 		deleteOutputFileIfExists(args);
 		
-		final Job job = new Job(getConf());
+		final Job job = Job.getInstance(getConf());
 		job.setJarByClass(ReduceSideJoinDriver.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
 		job.setPartitionerClass(ReduceSideJoinPartitioner.class);

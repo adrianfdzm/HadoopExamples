@@ -35,7 +35,7 @@ public class AvgAggregation2DDriver extends Configured implements Tool {
 
 		deleteOutputFileIfExists(args);
 
-		final Job job = new Job(getConf());
+		final Job job = Job.getInstance(getConf());
 		job.setJarByClass(AvgAggregation2DDriver.class);
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);

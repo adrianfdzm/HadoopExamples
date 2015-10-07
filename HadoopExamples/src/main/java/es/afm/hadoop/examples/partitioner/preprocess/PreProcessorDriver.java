@@ -31,7 +31,7 @@ public class PreProcessorDriver extends Configured implements Tool {
 
 		deleteOutputFileIfExists(args);
 
-		final Job job = new Job(getConf());
+		final Job job = Job.getInstance(getConf());
 		job.setJarByClass(PreProcessorDriver.class);
 		
 		FileInputFormat.addInputPath(job, new Path(args[0]));

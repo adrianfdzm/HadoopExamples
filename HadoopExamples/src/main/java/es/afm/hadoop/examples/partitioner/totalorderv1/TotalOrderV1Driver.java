@@ -29,7 +29,7 @@ public class TotalOrderV1Driver extends Configured implements Tool {
 
 		deleteOutputFileIfExists(args);
 
-		final Job job = new Job(getConf());
+		final Job job = Job.getInstance(getConf());
 		//local mode execution will turn this to 1
 		job.setNumReduceTasks(2);
 		
