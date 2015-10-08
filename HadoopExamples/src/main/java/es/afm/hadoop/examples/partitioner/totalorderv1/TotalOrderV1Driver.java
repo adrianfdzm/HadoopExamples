@@ -17,22 +17,23 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.log4j.BasicConfigurator;
 
 /**
- * Read SequenceFiles (#occurrences,word) and perform a total order on them 
+ * Read SequenceFiles (#occurrences,word) and perform a total order on them
  */
 public class TotalOrderV1Driver extends Configured implements Tool {
 
 	public int run(String[] args) throws Exception {
 		if (args.length != 2) {
-			System.err.println("URLCountDriver required params: <input_path> <output_path>");
+			System.err
+					.println("URLCountDriver required params: <input_path> <output_path>");
 			System.exit(-1);
 		}
 
 		deleteOutputFileIfExists(args);
 
 		final Job job = Job.getInstance(getConf());
-		//local mode execution will turn this to 1
+		// local mode execution will turn this to 1
 		job.setNumReduceTasks(2);
-		
+
 		job.setJarByClass(TotalOrderV1Driver.class);
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);

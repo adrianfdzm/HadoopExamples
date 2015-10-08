@@ -8,6 +8,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 public class WordcountReducer extends Reducer<Text, LongWritable, Text, LongWritable> {
 
+	private LongWritable outValue = new LongWritable();
 	@Override
 	protected void reduce(Text key, Iterable<LongWritable> values,
 			Reducer<Text, LongWritable, Text, LongWritable>.Context context) throws IOException, InterruptedException {
@@ -15,6 +16,7 @@ public class WordcountReducer extends Reducer<Text, LongWritable, Text, LongWrit
 		for (LongWritable value : values) {
 			count += value.get();
 		}
-		context.write(key, new LongWritable(count));
+		outValue.set(count);
+		context.write(key, outValue);
 	}
 }

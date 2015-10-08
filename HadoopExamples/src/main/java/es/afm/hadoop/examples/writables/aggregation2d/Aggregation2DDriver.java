@@ -22,14 +22,13 @@ import es.afm.hadoop.examples.writables.counters.Counters;
  * Read a 2D coordinate measures map and aggregate their values
  * coordinate1,coordinate2:value
  * 
- * TODO: Add counters to get malformed input count -> see mapper TODO: Implement
- * writable to perform average aggregation on same data set [sum, count]
  */
 public class Aggregation2DDriver extends Configured implements Tool {
 
 	public int run(String[] args) throws Exception {
 		if (args.length != 2) {
-			System.err.println("AvgAggregation2DDriver required params: <input_path> <output_path>");
+			System.err
+					.println("AvgAggregation2DDriver required params: <input_path> <output_path>");
 			System.exit(-1);
 		}
 
@@ -54,10 +53,12 @@ public class Aggregation2DDriver extends Configured implements Tool {
 
 		job.waitForCompletion(true);
 
-		System.out
-				.println("# Malformed records: " + job.getCounters().findCounter(Counters.MALFORMED_RECORD).getValue());
-		System.out.println(
-				"# Wrong values in records records: " + job.getCounters().findCounter(Counters.WRONG_VALUE).getValue());
+		System.out.println("# Malformed records: "
+				+ job.getCounters().findCounter(Counters.MALFORMED_RECORD)
+						.getValue());
+		System.out.println("# Wrong values in records records: "
+				+ job.getCounters().findCounter(Counters.WRONG_VALUE)
+						.getValue());
 		return 0;
 	}
 

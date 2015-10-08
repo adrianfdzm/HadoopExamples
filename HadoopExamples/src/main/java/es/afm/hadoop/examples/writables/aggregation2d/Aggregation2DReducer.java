@@ -7,16 +7,22 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import es.afm.hadoop.examples.writables.PointWritable;
 
-public class Aggregation2DReducer extends Reducer<PointWritable, LongWritable, PointWritable, LongWritable> {
+public class Aggregation2DReducer extends
+		Reducer<PointWritable, LongWritable, PointWritable, LongWritable> {
+
+	private LongWritable outValue = new LongWritable();
 
 	@Override
-	protected void reduce(PointWritable key, Iterable<LongWritable> values,
+	protected void reduce(
+			PointWritable key,
+			Iterable<LongWritable> values,
 			Reducer<PointWritable, LongWritable, PointWritable, LongWritable>.Context context)
-					throws IOException, InterruptedException {
+			throws IOException, InterruptedException {
 		long count = 0;
 		for (LongWritable value : values) {
 			count += value.get();
 		}
-		context.write(key, new LongWritable(count));
+		outValue.set(count);
+		context.write(key, outValue);
 	}
 }

@@ -29,6 +29,10 @@ public class AverageWritable implements Writable {
 	public void setCount(LongWritable count) {
 		this.count = count;
 	}
+	
+	public void setCount(long count) {
+		this.count.set(count);
+	}
 
 	public LongWritable getSum() {
 		return sum;
@@ -36,6 +40,10 @@ public class AverageWritable implements Writable {
 
 	public void setSum(LongWritable sum) {
 		this.sum = sum;
+	}
+
+	public void setSum(long sum) {
+		this.sum.set(sum);
 	}
 
 	public double getAverage() {
@@ -69,10 +77,10 @@ public class AverageWritable implements Writable {
 	public boolean equals(Object obj) {
 		if (obj instanceof AverageWritable) {
 			AverageWritable avg = (AverageWritable) obj;
-			if (this.count.get() == avg.count.get() && this.sum.get() == avg.sum.get())
+			if (this.count.get() == avg.count.get()
+					&& this.sum.get() == avg.sum.get())
 				return true;
 		}
 		return false;
 	}
-
 }

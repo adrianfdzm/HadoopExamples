@@ -8,7 +8,8 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class CompositeKeyWritable implements WritableComparable<CompositeKeyWritable> {
+public class CompositeKeyWritable implements
+		WritableComparable<CompositeKeyWritable> {
 	private Text joinKey;
 	private IntWritable datasetKey;
 	public static final int DATASET_KEY_TEACHERS = 2;
@@ -31,6 +32,10 @@ public class CompositeKeyWritable implements WritableComparable<CompositeKeyWrit
 
 	public void setJoinKey(Text joinKey) {
 		this.joinKey = joinKey;
+	}
+	
+	public void setJoinKey(String joinKey) {
+		this.joinKey.set(joinKey);
 	}
 
 	public IntWritable getDatasetKey() {
@@ -64,10 +69,10 @@ public class CompositeKeyWritable implements WritableComparable<CompositeKeyWrit
 		return new StringBuilder().append(datasetKey).append(", ")
 				.append(joinKey).toString();
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
-		if(obj instanceof CompositeKeyWritable)
+		if (obj instanceof CompositeKeyWritable)
 			return this.compareTo((CompositeKeyWritable) obj) == 0;
 		return false;
 	}

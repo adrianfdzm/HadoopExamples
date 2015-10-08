@@ -25,7 +25,8 @@ public class PreProcessorDriver extends Configured implements Tool {
 
 	public int run(String[] args) throws Exception {
 		if (args.length != 2) {
-			System.err.println("PreprocessorDriver required params: <input_path> <output_path>");
+			System.err
+					.println("PreprocessorDriver required params: <input_path> <output_path>");
 			System.exit(-1);
 		}
 
@@ -33,7 +34,7 @@ public class PreProcessorDriver extends Configured implements Tool {
 
 		final Job job = Job.getInstance(getConf());
 		job.setJarByClass(PreProcessorDriver.class);
-		
+
 		FileInputFormat.addInputPath(job, new Path(args[0]));
 		FileOutputFormat.setOutputPath(job, new Path(args[1]));
 

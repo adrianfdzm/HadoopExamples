@@ -10,21 +10,32 @@ import es.afm.hadoop.examples.writables.AverageWritable;
 import es.afm.hadoop.examples.writables.PointWritable;
 import es.afm.hadoop.examples.writables.counters.Counters;
 
-public class AvgAggregation2DMapper extends Mapper<LongWritable, Text, PointWritable, AverageWritable> {
+public class AvgAggregation2DMapper extends
+		Mapper<LongWritable, Text, PointWritable, AverageWritable> {
 
-	public static final String KEY_VALUE_SEP = "\\:";
-	public static final String POINT_COORDINATE_SEP = ",";
+	private static final String KEY_VALUE_SEP = "\\:";
+	private static final String POINT_COORDINATE_SEP = ",";
+	private AverageWritable outValue = new AverageWritable();
+	private LongWritable one = new LongWritable(1);
+	private PointWritable outKey = new PointWritable();
 
 	@Override
-	protected void map(LongWritable key, Text value, Mapper<LongWritable, Text, PointWritable, AverageWritable>.Context context)
+	protected void map(
+			LongWritable key,
+			Text value,
+			Mapper<LongWritable, Text, PointWritable, AverageWritable>.Context context)
 			throws IOException, InterruptedException {
 
 		try {
 			String pointStr = value.toString().split(KEY_VALUE_SEP)[0];
-			AverageWritable outValue = new AverageWritable(1, Long.parseLong(value.toString().split(KEY_VALUE_SEP)[1]));
+			outValue.setCount(one);
+			outValue.setSum(Long.parseLong(value.toString()
+					.split(KEY_VALUE_SEP)[1]));
 
-			PointWritable outKey = new PointWritable(Double.parseDouble(pointStr.split(POINT_COORDINATE_SEP)[0]),
-					Double.parseDouble(pointStr.split(POINT_COORDINATE_SEP)[1]));
+			outKey.setFirst(Double.parseDouble(pointStr
+					.split(POINT_COORDINATE_SEP)[0]));
+			outKey.setSecond(Double.parseDouble(pointStr
+					.split(POINT_COORDINATE_SEP)[1]));
 
 			context.write(outKey, outValue);
 		} catch (NumberFormatException e) {
