@@ -512,12 +512,11 @@ try {
 }
 ```
 ```Mapper``` class get the Ngram size throug context overriding ```setup``` function:
+```java
 @Override
 protected void setup(
 	Mapper<LongWritable, Text, Text, LongWritable>.Context context)
 		throws IOException, InterruptedException {
 	n = context.getConfiguration().getInt("ngram.size", n);
 }
-```java
-
 ```
