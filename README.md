@@ -7,6 +7,8 @@ This code was built in order to be used as example of all the characteristic of 
 * **partitioner/TotalOrderV1**: It shows how to order a wordcount file by the number of occurrences. Hadoop orders the output of each reduce task but we want the output of all reduce task to be ordered (part-r-00000 registers < part-r-00001 registers < part-r-00002 registers < ...). This job shows an ugly solution for a 2 reduce tasks job
 * **partitioner/TotalOrderV2**: Try to solve the same problem exposed above but this time Hadoop ```Sampler``` and ```TotalOrderPartitioner``` classes are used
 * **ReduceSideJoin**: Performs a join between two datasets using ```MultipleInputs``` to set a different ```Mapper``` class for each dataset. They map fucntion writes as key the value of the join key field, so results are grouped by the framework in the reduce phase
+* **inputformat/SentenceInputFormat**: This example depicts how to override the way in which Map tasks read the data from the input. Instead of reading a text file line by line, ```SentenceInputFormat``` splits the input in sentences sending each sentence as input record to each ```map``` function call
+* **inputformat/NGramCount**: Use ```SentenceInputFormat``` to count N-Grams occurrences in text files. N-Gram size (N) is an argument for the process and passed to map function throug job configuration
 
 ##Wordcount
 Basic example of MapReduce job. Map split lines into words that are writen as key. Punctuation marks are not taken into account
@@ -488,4 +490,34 @@ public class CompositeKeyWritableGroupingComparator extends WritableComparator {
 ```java
 MultipleInputs.addInputPath(job, new Path(args[0]), TextInputFormat.class, TeachersMapper.class);
 MultipleInputs.addInputPath(job, new Path(args[1]), TextInputFormat.class, DepartmentsMapper.class);
+```
+
+## inputformat/SentenceInputFormat
+
+It is very similar to ```TextInputFormat``` Hadoop implementation but instead of using a ```LineReader``` a custom ```SentenceReader``` is used. SentenceReader splits the file in sentences instead of lines
+
+## inputformat/NGramCount
+
+Example of use of custom ```InputFormat``` by setting ```SentenceInputFormat``` as input for the job:
+```java
+job.setInputFormatClass(SentenceInputFormat.class);
+```
+The Ngram size (N) it is set as an argument and passed to the map task throug job configuration:
+```java
+try {
+	job.getConfiguration().setInt("ngram.size", Integer.parseInt(args[2]));
+} catch (NumberFormatException e) {
+	System.err.println("Ngram-size is expected to be an integer value");
+	return 0;
+}
+```
+```Mapper``` class get the Ngram size throug context overriding ```setup``` function:
+@Override
+protected void setup(
+	Mapper<LongWritable, Text, Text, LongWritable>.Context context)
+		throws IOException, InterruptedException {
+	n = context.getConfiguration().getInt("ngram.size", n);
+}
+```java
+
 ```
