@@ -22,7 +22,7 @@ public class WordcountDriver extends Configured implements Tool {
 
 	public int run(String[] args) throws Exception {
 		if(args.length != 2) {
-			System.err.println("WordcountDriver required parameters: <input_path> <output_path>");
+			System.err.println(" WordcountDriver required parameters: <input_path> <output_path>");
 			System.exit(-1);
 		}
 		
@@ -32,7 +32,7 @@ public class WordcountDriver extends Configured implements Tool {
 		job.setJarByClass(WordcountDriver.class);
 		job.setInputFormatClass(TextInputFormat.class);
 		job.setOutputFormatClass(TextOutputFormat.class);
-		
+		ar
 		job.setMapperClass(WordcountMapper.class);
 		job.setReducerClass(WordcountReducer.class);
 		// We may use a combiner
