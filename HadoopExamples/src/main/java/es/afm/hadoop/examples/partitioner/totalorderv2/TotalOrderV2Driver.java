@@ -25,7 +25,7 @@ public class TotalOrderV2Driver extends Configured implements Tool {
 
 	public int run(String[] args) throws Exception {
 		if (args.length != 2) {
-			System.err.println("URLCountDriver required params: <input_path> <output_path>");
+			System.err.println("URLCountDriver required parameters: <input_path> <output_path>");
 			System.exit(-1);
 		}
 
