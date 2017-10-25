@@ -24,7 +24,7 @@ public class PreProcessorDriver extends Configured implements Tool {
 
 	public int run(String[] args) throws Exception {
 		if (args.length != 2) {
-			System.err.println("PreprocessorDriver required params: <input_path> <output_path>");
+			System.err.println("Required params: <input_path> <output_path>");
 			System.exit(-1);
 		}
 
