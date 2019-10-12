@@ -10,7 +10,7 @@ This code was built in order to be used as example of all the characteristic of 
 * **inputformat/SentenceInputFormat**: This example depicts how to override the way in which Map tasks read the data from the input. Instead of reading a text file line by line, ```SentenceInputFormat``` splits the input in sentences sending each sentence as input record to each ```map``` function call
 * **inputformat/NGramCount**: Use ```SentenceInputFormat``` to count N-Grams occurrences in text files. N-Gram size (N) is an argument for the process and passed to map function throug job configuration
 
-##Wordcount
+## Wordcount
 Basic example of MapReduce job. Map split lines into words that are writen as key. Punctuation marks are not taken into account
 ```java
   	@Override
@@ -40,7 +40,7 @@ job.setCombinerClass(WordcountReducer.class);
 ```
 In order to run the MapReduce job using ```hadoop jar``` command, main class musts implement ```Tool``` interface and extend ```Configured```. This is shown on ```WordcountDriver``` class
 
-##writables/Aggregation2D
+## writables/Aggregation2D
 
 This MapReduce job aims to illustrate how to use Hadoop custom ```WritableComparable``` class inside a MapReduce job. Map coordinates that are readed from a plain text file are seriealized into  ```PointWritable``` objects during the map tasks and passed on to the reduce tasks
 ```java
@@ -143,7 +143,7 @@ Note that:
 * ```equals()``` and ```hashCode()``` methods are used by some tools such as MRUnit (Unit testing for Hadoop MapReduce)
 * ```toString()``` method is used to write to the final output file of the job
 
-##writables/AvgAggregation2D
+## writables/AvgAggregation2D
 
 Based on the previous example, the same data is processed to calculate the average value of each point. Map phase produces now the pair ```<PointWritable,AverageWritable>```
 
@@ -230,7 +230,7 @@ public class AverageWritable implements Writable {
 }
 ```
 
-##partitioner/UrlCount
+## partitioner/UrlCount
 A file containing a url in each line is read to count the number of occurrences of each url. Each reduce task in a Hadoop MapReduce job write its own output file. Several reduce tasks are used in this job and it is required that urls with the same host end up in the same output file so a custom ```Partitioner``` implementation is used.
 
 ```java
@@ -292,7 +292,7 @@ public class URLCountPartitioner extends Partitioner<Text, LongWritable>{
 }
 ```
 
-##partitioner/TotalOrderSortV1
+## partitioner/TotalOrderSortV1
 
 The output from wordcount example are ordered alphabetically but now we desire to order that output by number of occurrences of each word. We preprocess the wordcount output file to change the key-value order of each register so the number of occurrences is now the key and the word is the value.
 
@@ -373,7 +373,7 @@ A custom partitioning function is set through ```job.setPartitionerClass(TotalOr
 ```
 It is being assuming that 2 reduce task are going to be set. Pairs with 3 or less number of occurrences are put into the partition #0 and the other into the second one. It is a bad practise to hardcode like that but it is just for understanding. Next example will fix this.
 
-##partitioner/TotalOrderSortV2
+## partitioner/TotalOrderSortV2
 
 This example solves the same problem decipted below but in a more appropiate way. First Hadoop ```TotalOrderPartitioner``` class is set. Then ```Sampler``` utility is use in order to create a partition list from ramdom samples of the input provided by ```RamdomSampler``` class. This list is going to be use by the ```TotalOrderPartitioner``` class. ```InputSampler.writePartitionFile(job, sampler)``` call must be done after ```TotalOrderPartitioner.setPartitionFile(job.getConfiguration(), new Path(args[1] + "/_partition.lst"));``` call
 
@@ -384,7 +384,7 @@ This example solves the same problem decipted below but in a more appropiate way
 	InputSampler.writePartitionFile(job, sampler);
 ```
 
-##ReduceSideJoin
+## ReduceSideJoin
 
 This example depicts how to perform a join between two dataset. First dataset contains several row in CSV format each one containing information about a teacher: identifier, department-id, name and salary. Second dataset contains information about deparments: department-id and department name. A teacher is related to only one department and a department has many associated teachers. The output of the job will be a row for each teacher containing his name, department name and salary. Then, department-id is going to be used as join key on the map phase. To make things easiers we are going to point the dataset the record belongs to adding a dataset key to map output records' key. So we have a composite key formed by the join key plus the data set key
 ```java
